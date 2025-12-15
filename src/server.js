@@ -1,7 +1,10 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const bodyParser = require('body-parser'); // use for parsing application/json
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+
+import bodyParser from 'body-parser';
+
+import router  from './osm/routes/transitRoute.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -17,6 +20,9 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.get('/', (req, res) => {
   res.send('Hello World! Server is running.');
 });
+
+// Transit routes
+app.use('/transit', router); // for checking the transit routes
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

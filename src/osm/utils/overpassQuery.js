@@ -63,3 +63,18 @@ export const buildPedestrianOverpassQuery = (bbox) => {
         out body;
     `;
 }
+
+// main function to build overpass query based on travel mode
+export const buildOverpassQuery = (travelMode, bbox) => {
+    switch (travelMode) {
+        case 'driving': 
+            return buildDrivingOverpassQuery(bbox);
+        case 'bicycling':
+            return buildBicycleOverpassQuery(bbox);
+        case 'walking':
+            return buildPedestrianOverpassQuery(bbox);
+
+        default:
+            throw new Error(`Unsupported travel mode: ${travelMode}`);
+    }
+};

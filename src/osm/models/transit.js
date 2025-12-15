@@ -8,8 +8,8 @@
 class Transit {
   constructor({origin, destination, travelMode}) {
     // origin and destination are objects with { latitude, longitude }
-    this.origin = origin;       
-    this.destination = destination;
+    this.origin = origin;      // { location: { latitude: xx, longitude: yy } } - means it will have a location property 
+    this.destination = destination; // { location: { latitude: xx, longitude: yy } }
     this.travelMode = travelMode;
   }
 }
