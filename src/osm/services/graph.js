@@ -95,4 +95,29 @@ export const isWayValidForTravelMode = (tags, travelMode) => {
     }
 }
 
+// create graph nodes and edges from OSM data 
+
+export const createGraph = (osmData, travelMode) => {
+
+    const graph ={
+        nodes: new Map(), // nodeId -> {lat, lon, edges: [{to: nodeId, wayId}]}
+        edges: new Map()  // wayId -> {from: nodeId, to: nodeId, tags}
+    }
+
+    //1. add all nodes to graph
+
+    let nodeCount = 0; // keeps track of number of nodes added
+    osmData.elements.forEach(element => {
+        if(element.type === 'node') {
+            graph.nodes.set(element.id, {
+                id: element.id,
+                lat: element.lat,
+                lon: element.lon,
+                tags: element.tags || {},
+            });
+            graph.edges.set(element.id, []); // initialize empty edges array to the given node id
+            nodeCount++;
+        }
+    });
+}
 
