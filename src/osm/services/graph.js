@@ -146,10 +146,34 @@ export const createGraph = (osmData, travelMode) => {
                 }
 
                 // get the distance between the two nodes
+                const distance = haversineDistance(fromNode.lat, fromNode.lon, toNode.lat, toNode.lon);
+
+                // add edge from "fromNode" to "toNode"
+                graph.edges.get(fromNodeId).push({
+                    to: toNodeId,
+                    wayId: element.id,
+                    distance
+                });
+
+                // if way is one-way, do not add edge in the opposite direction
+                if(isOneWay(element.tags)) {
+                    continue;
+                }
+
+                // add edge from "toNode" to "fromNode" for two-way ways
+                graph.edges.get(toNodeId).push({
+                    to: fromNodeId,
+                    wayId: element.id,
+                    distance
+                });
 
             }
         }
     });
+
+
+    console.log(`Graph created with ${nodeCount} nodes and ${wayCount - filteredWayCount} ways (filtered out ${filteredWayCount} ways).`);
+    return graph;
 
 }
 
@@ -173,3 +197,8 @@ export const haversineDistance = (lat1, lon1, lat2, lon2) => {
     return earthRadiusKm * c; // distance in kilometers
 }
 
+// helper function to check the way is one-way based on its tags
+export const isOneWay = (tags) => {
+    if(!tags) return false;
+    return tags?.oneway === 'yes' || tags.oneway === 'true' || tags.oneway === '1'; // it's one-way if any of these values match
+}
