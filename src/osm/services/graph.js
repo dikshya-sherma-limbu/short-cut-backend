@@ -104,8 +104,7 @@ export const createGraph = (osmData, travelMode) => {
         edges: new Map()  // wayId -> {from: nodeId, to: nodeId, tags}
     }
 
-    //1. add all nodes to graph
-
+    // 1. add all nodes to graph
     let nodeCount = 0; // keeps track of number of nodes added
     osmData.elements.forEach(element => {
         if(element.type === 'node') {
@@ -119,5 +118,58 @@ export const createGraph = (osmData, travelMode) => {
             nodeCount++;
         }
     });
+
+    // 2. add ways as edges to graph
+    let wayCount = 0;
+    let filteredWayCount = 0;
+    osmData.elements.forEach(element => {
+        if(element.type === 'way') {
+            wayCount++;
+            // if way isn't valid for travel mode, skip it
+            if(!isWayValidForTravelMode(element.tags, travelMode)) {
+                filteredWayCount++;
+                return; // it will stop processing this way and move to next
+            }
+
+            // create edges between consecutive nodes in the "way"
+            for(let i=0; i < element.nodes.length -1; i++) {
+                const fromNodeId = element.nodes[i];
+                const toNodeId = element.nodes[i+1];
+
+                // get the lon and lat of from and to nodes
+                const fromNode = graph.nodes.get(fromNodeId);
+                const toNode = graph.nodes.get(toNodeId);
+
+                if(!fromNode || !toNode) {
+                    // one of the nodes is missing in the graph (not in OSM data)
+                    continue; // skip this edge
+                }
+
+                // get the distance between the two nodes
+
+            }
+        }
+    });
+
+}
+
+// helper function to calculate distance between two lat/lon points using Haversine formula
+export const haversineDistance = (lat1, lon1, lat2, lon2) => {
+    const earthRadiusKm = 6371; // radius of the Earth in kilometers
+
+    // distance between latitudes and longitudes
+    const dLat =(lat2 - lat1) * Math.PI / 180;
+    const dLon =(lon2 - lon1) * Math.PI / 180;
+
+    //convert to radians
+    const radianLat1 = lat1 * Math.PI / 180;
+    const radianLat2 = lat2 * Math.PI / 180;
+
+    // apply Haversine formula
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(radianLat1) * Math.cos(radianLat2); // square of half the chord length between the points
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // angular distance in radians
+
+    return earthRadiusKm * c; // distance in kilometers
 }
 
