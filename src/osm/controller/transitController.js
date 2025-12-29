@@ -33,7 +33,11 @@ export const transitController = {
                     timeout: 30000 // important for Overpass - 30 seconds timeout
                 }
             );
-
+            console.log('--- Overpass API request successful ---');
+            // console.log('Overpass API response received. Element count:', response.data.elements.length);
+            console.log('--- Begin Overpass API response log ---');
+            console.log('Sample element:', response.data.elements[0]);
+            console.log('--- End of Overpass API response log ---');
             return response.data;
         } catch (error) {
             console.error('Overpass API error:', error.message);

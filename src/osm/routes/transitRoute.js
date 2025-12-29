@@ -16,7 +16,11 @@ router.get('/shortest-route', async (req, res) => {
         if (!origin || !destination || !travelMode) {
             return res.status(400).json({ error: 'Missing required query parameters' });
         }
-
+        
+        console.log(' LOG  Origin:', origin);
+        console.log(' LOG  Destination:', destination);
+        console.log(' LOG  Travel Mode:', travelMode);
+        
         const transitRequest = new Transit({
             origin: JSON.parse(origin),
             destination: JSON.parse(destination),

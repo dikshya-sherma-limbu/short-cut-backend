@@ -1,5 +1,84 @@
 // create the graph from the OSM response data
+// create graph nodes and edges from OSM data 
+export const createGraph = (osmData, travelMode) => {
 
+    const graph ={
+        nodes: new Map(), // nodeId -> {lat, lon, edges: [{to: nodeId, wayId}]}
+        edges: new Map()  // wayId -> {from: nodeId, to: nodeId, tags}
+    }
+
+    // 1. add all nodes to graph
+    let nodeCount = 0; // keeps track of number of nodes added
+    osmData.elements.forEach(element => {
+        if(element.type === 'node') {
+            graph.nodes.set(element.id, {
+                id: element.id,
+                lat: element.lat,
+                lon: element.lon,
+                tags: element.tags || {},
+            });
+            graph.edges.set(element.id, []); // initialize empty edges array to the given node id
+            nodeCount++;
+        }
+    });
+
+    // 2. add ways as edges to graph
+    let wayCount = 0;
+    let filteredWayCount = 0;
+    osmData.elements.forEach(element => {
+        if(element.type === 'way') {
+            wayCount++;
+            // if way isn't valid for travel mode, skip it
+            if(!isWayValidForTravelMode(element.tags, travelMode)) {
+                filteredWayCount++;
+                return; // it will stop processing this way and move to next
+            }
+
+            // create edges between consecutive nodes in the "way"
+            for(let i=0; i < element.nodes.length -1; i++) {
+                const fromNodeId = element.nodes[i];
+                const toNodeId = element.nodes[i+1];
+
+                // get the lon and lat of from and to nodes
+                const fromNode = graph.nodes.get(fromNodeId);
+                const toNode = graph.nodes.get(toNodeId);
+
+                if(!fromNode || !toNode) {
+                    // one of the nodes is missing in the graph (not in OSM data)
+                    continue; // skip this edge
+                }
+
+                // get the distance between the two nodes
+                const distance = haversineDistance(fromNode.lat, fromNode.lon, toNode.lat, toNode.lon);
+
+                // add edge from "fromNode" to "toNode"
+                graph.edges.get(fromNodeId).push({
+                    to: toNodeId,
+                    wayId: element.id,
+                    distance
+                });
+
+                // if way is one-way, do not add edge in the opposite direction
+                if(isOneWay(element.tags)) {
+                    continue;
+                }
+
+                // add edge from "toNode" to "fromNode" for two-way ways
+                graph.edges.get(toNodeId).push({
+                    to: fromNodeId,
+                    wayId: element.id,
+                    distance
+                });
+
+            }
+        }
+    });
+
+
+    console.log(`Graph created with ${nodeCount} nodes and ${wayCount - filteredWayCount} ways (filtered out ${filteredWayCount} ways).`);
+    return graph;
+
+}
 // add travel mode filter - for Walking paths
 const isWalking = (tags) => {
 
@@ -93,88 +172,6 @@ export const isWayValidForTravelMode = (tags, travelMode) => {
         default:
             return false;
     }
-}
-
-// create graph nodes and edges from OSM data 
-
-export const createGraph = (osmData, travelMode) => {
-
-    const graph ={
-        nodes: new Map(), // nodeId -> {lat, lon, edges: [{to: nodeId, wayId}]}
-        edges: new Map()  // wayId -> {from: nodeId, to: nodeId, tags}
-    }
-
-    // 1. add all nodes to graph
-    let nodeCount = 0; // keeps track of number of nodes added
-    osmData.elements.forEach(element => {
-        if(element.type === 'node') {
-            graph.nodes.set(element.id, {
-                id: element.id,
-                lat: element.lat,
-                lon: element.lon,
-                tags: element.tags || {},
-            });
-            graph.edges.set(element.id, []); // initialize empty edges array to the given node id
-            nodeCount++;
-        }
-    });
-
-    // 2. add ways as edges to graph
-    let wayCount = 0;
-    let filteredWayCount = 0;
-    osmData.elements.forEach(element => {
-        if(element.type === 'way') {
-            wayCount++;
-            // if way isn't valid for travel mode, skip it
-            if(!isWayValidForTravelMode(element.tags, travelMode)) {
-                filteredWayCount++;
-                return; // it will stop processing this way and move to next
-            }
-
-            // create edges between consecutive nodes in the "way"
-            for(let i=0; i < element.nodes.length -1; i++) {
-                const fromNodeId = element.nodes[i];
-                const toNodeId = element.nodes[i+1];
-
-                // get the lon and lat of from and to nodes
-                const fromNode = graph.nodes.get(fromNodeId);
-                const toNode = graph.nodes.get(toNodeId);
-
-                if(!fromNode || !toNode) {
-                    // one of the nodes is missing in the graph (not in OSM data)
-                    continue; // skip this edge
-                }
-
-                // get the distance between the two nodes
-                const distance = haversineDistance(fromNode.lat, fromNode.lon, toNode.lat, toNode.lon);
-
-                // add edge from "fromNode" to "toNode"
-                graph.edges.get(fromNodeId).push({
-                    to: toNodeId,
-                    wayId: element.id,
-                    distance
-                });
-
-                // if way is one-way, do not add edge in the opposite direction
-                if(isOneWay(element.tags)) {
-                    continue;
-                }
-
-                // add edge from "toNode" to "fromNode" for two-way ways
-                graph.edges.get(toNodeId).push({
-                    to: fromNodeId,
-                    wayId: element.id,
-                    distance
-                });
-
-            }
-        }
-    });
-
-
-    console.log(`Graph created with ${nodeCount} nodes and ${wayCount - filteredWayCount} ways (filtered out ${filteredWayCount} ways).`);
-    return graph;
-
 }
 
 // helper function to calculate distance between two lat/lon points using Haversine formula
