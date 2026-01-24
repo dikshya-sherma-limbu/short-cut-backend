@@ -26,23 +26,14 @@ router.get('/shortest-route', async (req, res) => {
             destination: JSON.parse(destination),
             travelMode
         }); // need this to be an instance of Transit class to pass to controller method
-        // 1️ bbox
-        const bbox = transitController.getBoundingBox(transitRequest);
+        
+        // call controller method to find shortest path
+        const shortestPathResult = await transitController.findShortestPath(transitRequest);
 
-        // 2️ overpass query
-        const query = transitController.getOverpassQuery(travelMode, bbox);
-
-        // 3️ fetch raw OSM data
-        const osmData = await transitController.getTransitData(query);
-
-        res.status(200).json({
-            bbox,
-            travelMode,
-            count: osmData.elements.length,
-            data: osmData
-        });
+        res.status(200).json(shortestPathResult);
        
     } catch (error) {
+        console.log(' ERROR  in /shortest-route:', error);
         res.status(500).json({error: 'Failed to get shortest route'});
     }
 

@@ -5,13 +5,12 @@ export const calculateBoundingBox = ([origin, destination]) => {
         throw new Error("Invalid coordinates");
     }
     // small buffer means adding a margin around the min and max lat/lon
-    //  a small buffer to the bounding box - 0.01 degrees (~1km) for testing
-    // will increase the buffer/area later 
-    const minLon = Math.min(origin.longitude, destination.longitude) - 0.01;
-    const maxLon = Math.max(origin.longitude, destination.longitude) + 0.01;
-    const minLat = Math.min(origin.latitude, destination.latitude) - 0.01;
-    const maxLat = Math.max(origin.latitude, destination.latitude) + 0.01;
-
+     // Increase buffer from 0.01 to 0.02 (about 2km)
+    const buffer = 0.02; // ← Changed from 0.01
+    const minLon = Math.min(origin.longitude, destination.longitude) - buffer;
+    const maxLon = Math.max(origin.longitude, destination.longitude) + buffer;
+    const minLat = Math.min(origin.latitude, destination.latitude) - buffer;
+    const maxLat = Math.max(origin.latitude, destination.latitude) + buffer;
     // Overpass requires: south, west, north, east
     return [minLat, minLon, maxLat, maxLon];
 };

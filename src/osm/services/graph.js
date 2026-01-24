@@ -1,4 +1,4 @@
-// create the graph from the OSM response data
+
 // create graph nodes and edges from OSM data 
 export const createGraph = (osmData, travelMode) => {
 
@@ -175,12 +175,13 @@ export const isWayValidForTravelMode = (tags, travelMode) => {
 }
 
 // helper function to calculate distance between two lat/lon points using Haversine formula
+// graph.js - Update this function
 export const haversineDistance = (lat1, lon1, lat2, lon2) => {
-    const earthRadiusKm = 6371; // radius of the Earth in kilometers
+    const earthRadiusMeters = 6371000; // ← Changed from 6371 km to meters!
 
     // distance between latitudes and longitudes
-    const dLat =(lat2 - lat1) * Math.PI / 180;
-    const dLon =(lon2 - lon1) * Math.PI / 180;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
 
     //convert to radians
     const radianLat1 = lat1 * Math.PI / 180;
@@ -188,10 +189,10 @@ export const haversineDistance = (lat1, lon1, lat2, lon2) => {
 
     // apply Haversine formula
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(radianLat1) * Math.cos(radianLat2); // square of half the chord length between the points
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // angular distance in radians
+              Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(radianLat1) * Math.cos(radianLat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    return earthRadiusKm * c; // distance in kilometers
+    return earthRadiusMeters * c; // ← Returns distance in METERS now
 }
 
 // helper function to check the way is one-way based on its tags
