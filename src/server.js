@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 // middleware - means to process something before reaching the final request handler
 // Enable CORS for all routes
 app.use(cors(
-  {origin: 'exp://192.168.5.153:8081' }
+  {origin: 'exp:// 192.168.5.173:8081' }
 ));
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
